@@ -1,3 +1,4 @@
+/*
 import {
     Game,
     UiCanvas,
@@ -27,6 +28,7 @@ import {
     Assets,
 //} from 'https://tylorallison.github.io/gizmo/releases/gizmo.mjs';
 } from '../../gizmo/dist/gizmo.mjs';
+*/
 /*
 
 */
@@ -43,7 +45,7 @@ function textFormatTemplate(opts={}) {
         // -- define a common font
         family: 'Fredoka One',
     }, opts);
-    return new TextFormat(spec);
+    return new gizmo.TextFormat(spec);
 }
 
 /**
@@ -59,7 +61,7 @@ const green = 'rgb(22,164,76)';
  * The Ball class extends a basic UI panel (which provides sketch handling and transform/position).
  * We will extend the class to track ball movement and collision state.
  */
-class Ball extends UiPanel {
+class Ball extends gizmo.UiPanel {
 
     // SCHEMA --------------------------------------------------------------
     /**
@@ -68,14 +70,14 @@ class Ball extends UiPanel {
      */
     static {
         // -- bounds of object w/ position and dimension
-        Schema.apply(this, 'bounds', { readonly: true, getter: (o,x) => (o.xform) ? new Bounds(o.xform.x+o.xform.minx, o.xform.y+o.xform.miny, o.xform.width, o.xform.height):new Bounds()});
+        gizmo.Schema.apply(this, 'bounds', { readonly: true, getter: (o,x) => (o.xform) ? new gizmo.Bounds(o.xform.x+o.xform.minx, o.xform.y+o.xform.miny, o.xform.width, o.xform.height):new gizmo.Bounds()});
             //let ballBounds = new Bounds(wantx+ball.xform.minx, wanty+ball.xform.miny, ball.xform.width, ball.xform.height);
         // -- angle associated with ball movement
-        Schema.apply(this, 'angle', {dflt: 0});
+        gizmo.Schema.apply(this, 'angle', {dflt: 0});
         // -- speed of the ball
-        Schema.apply(this, 'speed', {dflt: 0});
+        gizmo.Schema.apply(this, 'speed', {dflt: 0});
         // -- boolean indicating if the ball is currently colliding with the paddle
-        Schema.apply(this, 'colliding', {dflt: false});
+        gizmo.Schema.apply(this, 'colliding', {dflt: false});
     }
 
     // CONSTRUCTOR/DESTRUCTOR ----------------------------------------------
@@ -88,7 +90,7 @@ class Ball extends UiPanel {
         // provide a sketch for the ball which will override the UiPanel class default
         // Generator creates a gizmo data structure from a specification
         // Assets provides provide for access to tagged resources defined in the game definition
-        if (!spec.sketch) spec.sketch = Generator.generate(Assets.get('ball'));
+        if (!spec.sketch) spec.sketch = gizmo.Generator.generate(gizmo.Assets.get('ball'));
         super.cpre(spec);
     }
 
@@ -98,7 +100,7 @@ class Ball extends UiPanel {
     destroy() {
         // play a sound when the ball is destroyed
         // SfxSystem uses asset tags to identify sound effects to play and starts then asynchronously
-        SfxSystem.playSfx(this, 'lost.ball');
+        gizmo.SfxSystem.playSfx(this, 'lost.ball');
         super.destroy();
     }
 }
@@ -107,7 +109,7 @@ class Ball extends UiPanel {
  * The Brick class extends a basic UI panel (which provides sketch handling and transform/position).
  * We will extend the class to keep track of points to award and how many hits are required to destroy the brick.
  */
-class Brick extends UiPanel {
+class Brick extends gizmo.UiPanel {
 
     // SCHEMA --------------------------------------------------------------
     /**
@@ -116,11 +118,11 @@ class Brick extends UiPanel {
      */
     static {
         // -- bounds of object w/ position and dimension
-        Schema.apply(this, 'bounds', { readonly: true, getter: (o,x) => (o.xform) ? new Bounds(o.xform.x+o.xform.minx, o.xform.y+o.xform.miny, o.xform.width, o.xform.height):new Bounds()});
+        gizmo.Schema.apply(this, 'bounds', { readonly: true, getter: (o,x) => (o.xform) ? new gizmo.Bounds(o.xform.x+o.xform.minx, o.xform.y+o.xform.miny, o.xform.width, o.xform.height):new gizmo.Bounds()});
         // the points to award for this brick
-        Schema.apply(this, 'score', {dflt: 100});
+        gizmo.Schema.apply(this, 'score', {dflt: 100});
         // the number of hits required to destroy this block
-        Schema.apply(this, 'hits', {dflt: 1});
+        gizmo.Schema.apply(this, 'hits', {dflt: 1});
     }
 
     // CONSTRUCTOR/DESTRUCTOR ----------------------------------------------
@@ -133,7 +135,7 @@ class Brick extends UiPanel {
         // parse hit count
         let hits = spec.hits || 1;
         // update default sketch based on hits
-        if (!spec.sketch) spec.sketch = Generator.generate(Assets.get(`brick.${hits}`));
+        if (!spec.sketch) spec.sketch = gizmo.Generator.generate(gizmo.Assets.get(`brick.${hits}`));
         // update score based on hits
         if (!spec.score) spec.score = hits*100;
         super.cpre(spec);
@@ -148,12 +150,12 @@ class Brick extends UiPanel {
         this.hits--;
         // if hits reaches zero, brick gets destroyed
         if (this.hits <= 0) {
-            SfxSystem.playSfx(this, 'brick.destroyed');
+            gizmo.SfxSystem.playSfx(this, 'brick.destroyed');
             this.destroy();
         // otherwise, update brick sketch
         } else {
-            SfxSystem.playSfx(this, 'brick.hit');
-            this.sketch = Generator.generate(Assets.get(`brick.${this.hits}`));
+            gizmo.SfxSystem.playSfx(this, 'brick.hit');
+            this.sketch = gizmo.Generator.generate(gizmo.Assets.get(`brick.${this.hits}`));
         }
     }
 }
@@ -162,7 +164,7 @@ class Brick extends UiPanel {
  * The Wall class extends a basic UI panel (which provides sketch handling and transform/position).
  * We will extend the class to handle ball collisions
  */
-class Wall extends UiPanel {
+class Wall extends gizmo.UiPanel {
     // STATIC VARIABLES ----------------------------------------------------
     // how long does the wall "light up" when hit by a ball (in ms)
     static hitTTL = 300;
@@ -174,9 +176,9 @@ class Wall extends UiPanel {
      */
     static {
         // -- bounds of object w/ position and dimension
-        Schema.apply(this, 'bounds', { readonly: true, getter: (o,x) => (o.xform) ? new Bounds(o.xform.x+o.xform.minx, o.xform.y+o.xform.miny, o.xform.width, o.xform.height):new Bounds()});
+        gizmo.Schema.apply(this, 'bounds', { readonly: true, getter: (o,x) => (o.xform) ? new gizmo.Bounds(o.xform.x+o.xform.minx, o.xform.y+o.xform.miny, o.xform.width, o.xform.height):new gizmo.Bounds()});
         // the wall state, one of 'idle' or 'hit'
-        Schema.apply(this, 'state', {dflt: 'idle'});
+        gizmo.Schema.apply(this, 'state', {dflt: 'idle'});
     }
 
     // CONSTRUCTOR/DESTRUCTOR ----------------------------------------------
@@ -191,7 +193,7 @@ class Wall extends UiPanel {
         // determine wall sketch tag based on dimensions from xform
         let sketchTag = (xform && xform.width>xform.height) ? 'wall.h' : 'wall.v';
         // update default sketch based on computed tag
-        if (!spec.sketch) spec.sketch = Generator.generate(Assets.get(sketchTag));
+        if (!spec.sketch) spec.sketch = gizmo.Generator.generate(gizmo.Assets.get(sketchTag));
         super.cpre(spec);
     }
 
@@ -200,14 +202,14 @@ class Wall extends UiPanel {
      * register a hit of the ball with this wall
      */
     hit() {
-        SfxSystem.playSfx(this, 'wall.hit');
+        gizmo.SfxSystem.playSfx(this, 'wall.hit');
         if (this.state === 'idle') {
             // update wall state to indicate it has been hit
             // NOTE: the sketch asset used for this class is an Animator sketch class.  Animator classes track linked gizmo state 
             //       to automatically switch sketches to match gizmo (in this case wall) state.
             this.state = 'hit';
             // create a timer that will transition the state back to 'idle' after the timer completes.
-            new Timer({ttl: this.constructor.hitTTL, cb: () => this.state = 'idle'});
+            new gizmo.Timer({ttl: this.constructor.hitTTL, cb: () => this.state = 'idle'});
         }
     }
 
@@ -217,7 +219,7 @@ class Wall extends UiPanel {
  * The Paddle class extends a basic UI panel (which provides sketch handling and transform/position).
  * We will extend the class to handle ball collisions and position updates
  */
-class Paddle extends UiPanel {
+class Paddle extends gizmo.UiPanel {
 
     // SCHEMA --------------------------------------------------------------
     /**
@@ -226,9 +228,9 @@ class Paddle extends UiPanel {
      */
     static {
         // -- bounds of object w/ position and dimension
-        Schema.apply(this, 'bounds', { readonly: true, getter: (o,x) => (o.xform) ? new Bounds(o.xform.x+o.xform.minx, o.xform.y+o.xform.miny, o.xform.width, o.xform.height) : new Bounds()});
+        gizmo.Schema.apply(this, 'bounds', { readonly: true, getter: (o,x) => (o.xform) ? new gizmo.Bounds(o.xform.x+o.xform.minx, o.xform.y+o.xform.miny, o.xform.width, o.xform.height) : new gizmo.Bounds()});
         // -- percent of play space each edge takes up
-        Schema.apply(this, 'edgeWidthPct', { dflt: 1/24 });
+        gizmo.Schema.apply(this, 'edgeWidthPct', { dflt: 1/24 });
         // the wall state, one of 'idle' or 'hit'
         // -- 'setter' function is called whenever the property is set and is given the (object, object specification, value) and must return the value
         //    to be stored.  This is called prior to storing the value and allows for filtering/modifying values before they are saved.  Here, we clamp
@@ -236,12 +238,12 @@ class Paddle extends UiPanel {
         // -- 'onSet' function is called after a value has been set and stored and is passed (object, old value, new value).  This is useful if there
         //    are side effects you want to apply when a value is set that are dependent on the stored value.  Here, we modify the paddle's transform (xform)
         //    based on linear interpretation of the paddle value.
-        Schema.apply(this, 'value', {dflt: .5, setter: (o,x,v) => Mathf.clamp(v, 0, 1), onSet: (o,ov,nv) => {
+        gizmo.Schema.apply(this, 'value', {dflt: .5, setter: (o,x,v) => gizmo.Mathf.clamp(v, 0, 1), onSet: (o,ov,nv) => {
             if (o.xform && o.xform.parent) {
                 let edgeWidth = o.xform.parent.width * o.edgeWidthPct;
                 let left = o.xform.parent.minx+edgeWidth;
                 let right = o.xform.parent.maxx-edgeWidth;
-                o.xform.x = Mathf.lerp(0, 1, left + o.xform.width/2, right-o.xform.width/2, nv);
+                o.xform.x = gizmo.Mathf.lerp(0, 1, left + o.xform.width/2, right-o.xform.width/2, nv);
             }
         }});
     }
@@ -254,7 +256,7 @@ class Paddle extends UiPanel {
      */
     cpre(spec) {
         // update default sketch for paddle
-        if (!spec.sketch) spec.sketch = Generator.generate(Assets.get('paddle'));
+        if (!spec.sketch) spec.sketch = gizmo.Generator.generate(gizmo.Assets.get('paddle'));
         super.cpre(spec);
     }
 
@@ -265,7 +267,7 @@ class Paddle extends UiPanel {
  * The state manager performs state transitions based on triggered events.
  * The TitleState is providing the UI elements and user interaction handling for the main title screen.
  */
-class TitleState extends GameState {
+class TitleState extends gizmo.GameState {
 
     // METHODS -------------------------------------------------------------
     /**
@@ -275,32 +277,32 @@ class TitleState extends GameState {
         // The main UI is created by nesting UI elements under a top-level canvas.
         // Each UI element has a transform (xform) that defines the position of the element with respect to the parent.
         // Sensible defaults are used for each UI class, so all options are not required for every instantiation.
-        this.cvs = new UiCanvas({
+        this.cvs = new gizmo.UiCanvas({
             children: [
                 // A panel is used to render a sketch to the UI
-                new UiPanel({
+                new gizmo.UiPanel({
                     // tags can be specified so that the UI elements can be looked up
                     tag: 'mainPanel',
                     // lookup the background asset 'bg' to use as the sketch
-                    sketch: Generator.generate(this.assets.get('bg')),
+                    sketch: gizmo.Generator.generate(this.assets.get('bg')),
                     // here, the main panel's transform is being defined to be a percent of the parent's size
                     // 'grip' is shorthand for specifying 'left', 'right', 'top', 'bottom' all being the same value, or 15% of the parent's size
                     // 'gripOffsetForceRatio' is used to force a specific aspect ratio (width/height).  this will cause the panel to shrink either the
                     //   horizontal or vertical space to maintain this ratio
-                    xform: new XForm({ grip: .15, gripOffsetForceRatio: 480/640 }),
+                    xform: new gizmo.XForm({ grip: .15, gripOffsetForceRatio: 480/640 }),
                     children: [
                         // a text UI element for the main title
-                        new UiText({
+                        new gizmo.UiText({
                             text: 'Gizmo Breakout',
                             // NOTE: the use of the textFormatTemplate defined above, providing global look-and-feel across all text elements
                             fmt: textFormatTemplate({ color: red }),
-                            xform: new XForm({ left: .15, right: .15, top: .3, bottom: .5}),
+                            xform: new gizmo.XForm({ left: .15, right: .15, top: .3, bottom: .5}),
                         }),
                         // a text UI element for the player instructions
-                        new UiText({
+                        new gizmo.UiText({
                             text: '-- press a key or click to play --',
                             fmt: textFormatTemplate({ color: yellow }),
-                            xform: new XForm({ left: .1, right: .1, top: .5, bottom: .4}),
+                            xform: new gizmo.XForm({ left: .1, right: .1, top: .5, bottom: .4}),
                         }),
                     ],
                 }),
@@ -311,11 +313,11 @@ class TitleState extends GameState {
         //    a gizmo context variable is associated with every gizmo object.  this context acts as a global event emitter and can be used to listen
         //    for events across all game objects.  Thie 'EvtSystem.listen' sets up a listener function, which is defined here to call
         //    'StateMgr.start', which causes the state manager to transition to the 'play' state.
-        EvtSystem.listen(this.gctx, this, 'key.down', () => StateMgr.start('play'));
+        gizmo.EvtSystem.listen(this.gctx, this, 'key.down', () => gizmo.StateMgr.start('play'));
         // -- the 'mouse.clicked' event is triggered when the mouse is clicked.  Note, in this case the canvas is the event emitter (not the gizmo context).
         //    by default, mouse events will be triggered for each UI element that the mouse is over.  The gizmo context acts as a collector for all those events, 
         //    and could register multiple events for a single click.
-        EvtSystem.listen(this.cvs, this, 'mouse.clicked', () => StateMgr.start('play'));
+        gizmo.EvtSystem.listen(this.cvs, this, 'mouse.clicked', () => gizmo.StateMgr.start('play'));
     }
 
     /**
@@ -323,11 +325,11 @@ class TitleState extends GameState {
      * Event handlers should be disabled here.
      */
     async stop() {
-        SfxSystem.playSfx(this, 'blip');
+        gizmo.SfxSystem.playSfx(this, 'blip');
         await super.stop();
         // disable the 'key.down and 'mouse.clicked' handlers
-        EvtSystem.ignore(this.gctx, this, 'key.down');
-        EvtSystem.ignore(this.cvs, this, 'mouse.clicked');
+        gizmo.EvtSystem.ignore(this.gctx, this, 'key.down');
+        gizmo.EvtSystem.ignore(this.cvs, this, 'mouse.clicked');
         // destroy the canvas
         this.cvs.destroy();
     }
@@ -338,7 +340,7 @@ class TitleState extends GameState {
  * The state manager performs state transitions based on triggered events.
  * The GameOverState is providing the UI elements and user interaction handling for the game over screen.
  */
-class GameOverState extends GameState {
+class GameOverState extends gizmo.GameState {
 
     // METHODS -------------------------------------------------------------
     /**
@@ -346,31 +348,31 @@ class GameOverState extends GameState {
      */
     async prepare(data={}) {
         let score = data.score || 0;
-        this.cvs = new UiCanvas({ children: [
-            new UiPanel({
-                sketch: Generator.generate(this.assets.get('bg')),
-                xform: new XForm({ grip: .15, gripOffsetForceRatio: 480/640 }),
+        this.cvs = new gizmo.UiCanvas({ children: [
+            new gizmo.UiPanel({
+                sketch: gizmo.Generator.generate(this.assets.get('bg')),
+                xform: new gizmo.XForm({ grip: .15, gripOffsetForceRatio: 480/640 }),
                 children: [
-                    new UiText({
+                    new gizmo.UiText({
                         text: 'Game Over',
                         fmt: textFormatTemplate({ color: red }),
-                        xform: new XForm({ left: .15, right: .15, top: .3, bottom: .5}),
+                        xform: new gizmo.XForm({ left: .15, right: .15, top: .3, bottom: .5}),
                     }),
-                    new UiText({
+                    new gizmo.UiText({
                         text: '-- press a key or click to continue --',
                         fmt: textFormatTemplate({ color: yellow }),
-                        xform: new XForm({ left: .1, right: .1, top: .5, bottom: .4}),
+                        xform: new gizmo.XForm({ left: .1, right: .1, top: .5, bottom: .4}),
                     }),
-                    new UiText({
+                    new gizmo.UiText({
                         text: `score: ${score}`,
                         fmt: textFormatTemplate({ color: orange }),
-                        xform: new XForm({ left: .1, right: .1, top: .65, bottom: .3}),
+                        xform: new gizmo.XForm({ left: .1, right: .1, top: .65, bottom: .3}),
                     }),
                 ],
             }),
         ]});
-        EvtSystem.listen(this.gctx, this, 'key.down', () => StateMgr.start('title'));
-        EvtSystem.listen(this.cvs, this, 'mouse.clicked', () => StateMgr.start('title'));
+        gizmo.EvtSystem.listen(this.gctx, this, 'key.down', () => gizmo.StateMgr.start('title'));
+        gizmo.EvtSystem.listen(this.cvs, this, 'mouse.clicked', () => gizmo.StateMgr.start('title'));
     }
 
     /**
@@ -378,10 +380,10 @@ class GameOverState extends GameState {
      * Event handlers should be disabled here.
      */
     async stop() {
-        SfxSystem.playSfx(this, 'blip');
+        gizmo.SfxSystem.playSfx(this, 'blip');
         await super.stop();
-        EvtSystem.ignore(this.gctx, this, 'key.down');
-        EvtSystem.ignore(this.cvs, this, 'mouse.clicked');
+        gizmo.EvtSystem.ignore(this.gctx, this, 'key.down');
+        gizmo.EvtSystem.ignore(this.cvs, this, 'mouse.clicked');
         this.cvs.destroy();
     }
 }
@@ -391,7 +393,7 @@ class GameOverState extends GameState {
  * The state manager performs state transitions based on triggered events.
  * The WinState is providing the UI elements and user interaction handling for the game won screen.
  */
-class WinState extends GameState {
+class WinState extends gizmo.GameState {
 
     // METHODS -------------------------------------------------------------
     /**
@@ -399,31 +401,31 @@ class WinState extends GameState {
      */
     async prepare(data={}) {
         let score = data.score || 0;
-        this.cvs = new UiCanvas({ children: [
-            new UiPanel({
-                sketch: Generator.generate(this.assets.get('bg')),
-                xform: new XForm({ grip: .15, gripOffsetForceRatio: 480/640 }),
+        this.cvs = new gizmo.UiCanvas({ children: [
+            new gizmo.UiPanel({
+                sketch: gizmo.Generator.generate(this.assets.get('bg')),
+                xform: new gizmo.XForm({ grip: .15, gripOffsetForceRatio: 480/640 }),
                 children: [
-                    new UiText({
+                    new gizmo.UiText({
                         text: `You're a Winner!`,
                         fmt: textFormatTemplate({ color: green }),
-                        xform: new XForm({ left: .15, right: .15, top: .3, bottom: .5}),
+                        xform: new gizmo.XForm({ left: .15, right: .15, top: .3, bottom: .5}),
                     }),
-                    new UiText({
+                    new gizmo.UiText({
                         text: '-- press a key or click to continue --',
                         fmt: textFormatTemplate({ color: yellow }),
-                        xform: new XForm({ left: .1, right: .1, top: .5, bottom: .4}),
+                        xform: new gizmo.XForm({ left: .1, right: .1, top: .5, bottom: .4}),
                     }),
-                    new UiText({
+                    new gizmo.UiText({
                         text: `score: ${score}`,
                         fmt: textFormatTemplate({ color: orange }),
-                        xform: new XForm({ left: .1, right: .1, top: .65, bottom: .3}),
+                        xform: new gizmo.XForm({ left: .1, right: .1, top: .65, bottom: .3}),
                     }),
                 ],
             }),
         ]});
-        EvtSystem.listen(this.gctx, this, 'key.down', () => StateMgr.start('title'));
-        EvtSystem.listen(this.cvs, this, 'mouse.clicked', () => StateMgr.start('title'));
+        gizmo.EvtSystem.listen(this.gctx, this, 'key.down', () => gizmo.StateMgr.start('title'));
+        gizmo.EvtSystem.listen(this.cvs, this, 'mouse.clicked', () => gizmo.StateMgr.start('title'));
     }
 
     /**
@@ -431,10 +433,10 @@ class WinState extends GameState {
      * Event handlers should be disabled here.
      */
     async stop() {
-        SfxSystem.playSfx(this, 'blip');
+        gizmo.SfxSystem.playSfx(this, 'blip');
         await super.stop();
-        EvtSystem.ignore(this.gctx, this, 'key.down');
-        EvtSystem.ignore(this.cvs, this, 'mouse.clicked');
+        gizmo.EvtSystem.ignore(this.gctx, this, 'key.down');
+        gizmo.EvtSystem.ignore(this.cvs, this, 'mouse.clicked');
         this.cvs.destroy();
     }
 }
@@ -444,7 +446,7 @@ class WinState extends GameState {
  * The state manager performs state transitions based on triggered events.
  * The PlayState is providing the UI elements and user interaction handling for the main game play screen.
  */
-class PlayState extends GameState {
+class PlayState extends gizmo.GameState {
 
     // STATIC VARIABLES ----------------------------------------------------
     // The game is layed out with a fixed aspect ration of 3/4.
@@ -534,69 +536,69 @@ class PlayState extends GameState {
         this.bricks = [];
         this.walls = [];
         // the main game play UI
-        this.cvs = new UiCanvas({ children: [
-            new UiPanel({
+        this.cvs = new gizmo.UiCanvas({ children: [
+            new gizmo.UiPanel({
                 tag: 'background',
-                sketch: Sketch.zero,
-                xform: new XForm({ grip: .15, gripOffsetForceRatio: 480/640 }),
+                sketch: gizmo.Sketch.zero,
+                xform: new gizmo.XForm({ grip: .15, gripOffsetForceRatio: 480/640 }),
                 mask: true,
                 children: [
                     // title text
-                    new UiText({
+                    new gizmo.UiText({
                         text: 'Gizmo Breakout',
                         fmt: textFormatTemplate({ color: red }),
-                        xform: new XForm({ left: .15, right: .15, top: .015, bottom: .935}),
+                        xform: new gizmo.XForm({ left: .15, right: .15, top: .015, bottom: .935}),
                     }),
                     // panel for the playground
-                    new UiPanel({
+                    new gizmo.UiPanel({
                         tag: 'playground',
-                        sketch: Generator.generate(this.assets.get('bg')),
-                        xform: new XForm({ origx: 0, origy: 0, left: 0/24, right: 0/24, top: 2/32, bottom: 0}),
+                        sketch: gizmo.Generator.generate(this.assets.get('bg')),
+                        xform: new gizmo.XForm({ origx: 0, origy: 0, left: 0/24, right: 0/24, top: 2/32, bottom: 0}),
                         children: [
                             // playground includes the paddle, other elements will be spawned
                             new Paddle({
                                 tag: 'paddle',
-                                xform: new XForm({ left: 0, right: 1, top: 0, bottom: 1, fixedWidth: 50, fixedHeight: 15, y: 200 }),
+                                xform: new gizmo.XForm({ left: 0, right: 1, top: 0, bottom: 1, fixedWidth: 50, fixedHeight: 15, y: 200 }),
                             }),
                         ],
                     }),
                     // the timer
-                    new UiText({
+                    new gizmo.UiText({
                         tag: 'timer',
                         text: '3',
                         visible: false,
                         fmt: textFormatTemplate({ color: red }),
-                        xform: new XForm({ grip: .4}),
+                        xform: new gizmo.XForm({ grip: .4}),
                     }),
                     // bottom row of text elements showing lives, score and level
-                    new UiText({
+                    new gizmo.UiText({
                         tag: 'lives',
                         text: `lives: ${this.lives}`,
                         alignx: 0,
                         fmt: textFormatTemplate({ color: orange }),
-                        xform: new XForm({ left: .1, right: .5, top: .935, bottom: 0.025}),
+                        xform: new gizmo.XForm({ left: .1, right: .5, top: .935, bottom: 0.025}),
                     }),
-                    new UiText({
+                    new gizmo.UiText({
                         tag: 'score',
                         text: `score: ${this.score}`,
                         fmt: textFormatTemplate({ color: orange }),
-                        xform: new XForm({ left: .2, right: .2, top: .925, bottom: 0.025}),
+                        xform: new gizmo.XForm({ left: .2, right: .2, top: .925, bottom: 0.025}),
                     }),
-                    new UiText({
+                    new gizmo.UiText({
                         tag: 'level',
                         text: `level: ${this.level+1}`,
                         alignx: 1,
                         fmt: textFormatTemplate({ color: orange }),
-                        xform: new XForm({ right: .1, left: .5, top: .935, bottom: 0.025}),
+                        xform: new gizmo.XForm({ right: .1, left: .5, top: .935, bottom: 0.025}),
                     }),
                 ],
             }),
         ]});
 
         // retrieve UI elements based on finding element w/ specified tag
-        this.background = Hierarchy.find(this.cvs, (v) => v.tag === 'background');
-        this.playground = Hierarchy.find(this.cvs, (v) => v.tag === 'playground');
-        this.paddle = Hierarchy.find(this.cvs, (v) => v.tag === 'paddle');
+        this.background = gizmo.Hierarchy.find(this.cvs, (v) => v.tag === 'background');
+        this.playground = gizmo.Hierarchy.find(this.cvs, (v) => v.tag === 'playground');
+        this.paddle = gizmo.Hierarchy.find(this.cvs, (v) => v.tag === 'paddle');
         // values based on UI element sizes
         this.scale = this.playground.xform.width/480;
         let edgeWidth = this.constructor.wallWidthPct * this.playground.xform.width;
@@ -609,23 +611,23 @@ class PlayState extends GameState {
         this.paddle.xform.fixedWidth = Math.round(this.playground.xform.width * this.constructor.paddleWidthPct);
         this.paddle.xform.fixedHeight = Math.round(this.playground.xform.height * this.constructor.paddleHeightPct);
         this.paddle.xform.y = Math.round(this.playground.xform.height * this.constructor.paddleYPct);
-        this.paddle.xform.x = Mathf.lerp(0, 1, this.leftEdge + this.paddle.xform.fixedWidth/2, this.rightEdge-this.paddle.xform.fixedWidth/2, this.paddle.value);
+        this.paddle.xform.x = gizmo.Mathf.lerp(0, 1, this.leftEdge + this.paddle.xform.fixedWidth/2, this.rightEdge-this.paddle.xform.fixedWidth/2, this.paddle.value);
         // bind event handlers
         this.onKeyEvt = this.onKeyEvt.bind(this);
         this.onMouseEvt = this.onMouseEvt.bind(this);
         this.onBallTick = this.onBallTick.bind(this);
         this.onBrickDestroyed = this.onBrickDestroyed.bind(this);
         // setup listeners
-        EvtSystem.listen(this.gctx, this, 'key.down', this.onKeyEvt);
-        EvtSystem.listen(this.gctx, this, 'key.up', this.onKeyEvt);
-        EvtSystem.listen(this.gctx, this, 'mouse.moved', this.onMouseEvt);
+        gizmo.EvtSystem.listen(this.gctx, this, 'key.down', this.onKeyEvt);
+        gizmo.EvtSystem.listen(this.gctx, this, 'key.up', this.onKeyEvt);
+        gizmo.EvtSystem.listen(this.gctx, this, 'mouse.moved', this.onMouseEvt);
         // spawn walls
         this.spawnWalls();
         // spawn level
         this.spawnLevel(this.level);
         // start timer
         this.startTimer();
-        this.ballTicker = new Timer({ ttl: 0, loop: true, cb: this.onBallTick });
+        this.ballTicker = new gizmo.Timer({ ttl: 0, loop: true, cb: this.onBallTick });
         this.paddleTicker;
     }
 
@@ -636,9 +638,9 @@ class PlayState extends GameState {
     async stop() {
         await super.stop();
         // disable event handlers
-        EvtSystem.ignore(this.gctx, this, 'key.down');
-        EvtSystem.ignore(this.gctx, this, 'key.up');
-        EvtSystem.ignore(this.gctx, this, 'mouse.moved');
+        gizmo.EvtSystem.ignore(this.gctx, this, 'key.down');
+        gizmo.EvtSystem.ignore(this.gctx, this, 'key.up');
+        gizmo.EvtSystem.ignore(this.gctx, this, 'mouse.moved');
         // destroy the UI
         this.cvs.destroy();
         // stop any timers
@@ -660,7 +662,7 @@ class PlayState extends GameState {
             // set up a timer to handle updates to the paddle value.  The timer is setup to tick every frame (ttl: 0) and is set to loop
             // which means it will trigger until it is explicitly stopped/destroyed.  The callback function uses the elapsed time from 
             // the timer event to calculate the delta to the paddle value
-            this.paddleTicker = new Timer({ttl: 0, loop: true, cb: (data) => {
+            this.paddleTicker = new gizmo.Timer({ttl: 0, loop: true, cb: (data) => {
                 let delta = ((evt.key === 'ArrowLeft') ? -this.constructor.paddleSpeed : this.constructor.paddleSpeed) * data.elapsed;
                 this.paddle.value = this.paddle.value + delta;
             }});
@@ -682,9 +684,9 @@ class PlayState extends GameState {
         // all UI elements track whether or not the mouse is currently over the element.  Skip calculations if the mouse isn't over the playground.
         if (!this.playground.mouseOver) return;
         // get mouse position local to playground
-        let localPos = this.playground.xform.getLocal(new Vect(evt.x, evt.y));
+        let localPos = this.playground.xform.getLocal(new gizmo.Vect(evt.x, evt.y));
         // translate local position to paddle value
-        let value = Mathf.clamp(Mathf.lerp( this.paddle.xform.width/2, this.playground.xform.width-this.paddle.xform.width/2, 0, 1, localPos.x), 0, 1);
+        let value = gizmo.Mathf.clamp(gizmo.Mathf.lerp( this.paddle.xform.width/2, this.playground.xform.width-this.paddle.xform.width/2, 0, 1, localPos.x), 0, 1);
         this.paddle.value = value;
     }
 
@@ -705,17 +707,17 @@ class PlayState extends GameState {
             let collided = false;
             let wantAngle = ball.angle;
             // -- paddle
-            let ballBounds = new Bounds(wantx+ball.xform.minx, wanty+ball.xform.miny, ball.xform.width, ball.xform.height);
+            let ballBounds = new gizmo.Bounds(wantx+ball.xform.minx, wanty+ball.xform.miny, ball.xform.width, ball.xform.height);
             if (ballBounds.overlaps(this.paddle.bounds)) {
                 if (!ball.colliding) {
                     collided = 'paddle';
                     ball.colliding = true;
                     let intersection = ballBounds.intersects(this.paddle.bounds);
                     if (intersection) {
-                        SfxSystem.playSfx(this, 'paddle.hit');
+                        gizmo.SfxSystem.playSfx(this, 'paddle.hit');
                         if (intersection.width >= intersection.height) {
                             // *tilt* paddle based on distance from center
-                            let tilt = Mathf.lerp(this.paddle.bounds.minx, this.paddle.bounds.maxx, Math.PI*1.3, Math.PI*1.7, intersection.midx);
+                            let tilt = gizmo.Mathf.lerp(this.paddle.bounds.minx, this.paddle.bounds.maxx, Math.PI*1.3, Math.PI*1.7, intersection.midx);
                             let nx = Math.cos(tilt);
                             let ny = Math.sin(tilt);
                             let dot = nx*dx+ny*dy
@@ -810,7 +812,7 @@ class PlayState extends GameState {
      */
     startTimer() {
         // find the UI timer and make it visible
-        let uitimer = Hierarchy.find(this.cvs, (v) => v.tag === 'timer');
+        let uitimer = gizmo.Hierarchy.find(this.cvs, (v) => v.tag === 'timer');
         uitimer.visible = true;
         // keep track of number of ticks on the timer
         let tick = 3;
@@ -818,15 +820,15 @@ class PlayState extends GameState {
         uitimer.text = tick.toString();
         // create the tick timer, to tick off every second, the timer loops and is stopped by the callback based on the number of ticks
         let timer;
-        timer = new Timer({ttl: 1000, loop: true, cb: (data) => {
+        timer = new gizmo.Timer({ttl: 1000, loop: true, cb: (data) => {
             tick--;
             // timer has ticks left...
             if (tick > 0) {
-                SfxSystem.playSfx(this, 'blip');
+                gizmo.SfxSystem.playSfx(this, 'blip');
                 uitimer.text = tick.toString();
             // when ticks hits zero, spawn the ball, stop the timer
             } else {
-                SfxSystem.playSfx(this, 'spawn.ball');
+                gizmo.SfxSystem.playSfx(this, 'spawn.ball');
                 timer.destroy();
                 uitimer.visible = false;
                 this.spawnBall();
@@ -842,21 +844,21 @@ class PlayState extends GameState {
         let radius = Math.round(this.playground.xform.width * this.constructor.ballRadiusPct);
         let buffer = Math.round(this.playground.xform.width * this.constructor.ballSpawnBufferPct);
         // ball is spawned at random x location, fixed y location
-        let x = Random.rangeInt(buffer+radius, this.playground.xform.width-(radius+buffer));
+        let x = gizmo.Random.rangeInt(buffer+radius, this.playground.xform.width-(radius+buffer));
         let y = Math.round(this.playground.xform.height*this.constructor.ballSpawnYPct);
         // angle is a random angle within range pointing down
-        let angle = Random.range(Math.PI*.35, Math.PI*.65);
+        let angle = gizmo.Random.range(Math.PI*.35, Math.PI*.65);
         // speed is scaled based on playground dimensions
         let speed = this.constructor.ballSpeed * this.scale;
         // finally create the ball, add it to the list of tracked balls
         let ball = new Ball({
-            xform: new XForm({ left: 0, right: 1, top: 0, bottom: 1, fixedWidth: radius*2, fixedHeight: radius*2, x: x, y: y }),
+            xform: new gizmo.XForm({ left: 0, right: 1, top: 0, bottom: 1, fixedWidth: radius*2, fixedHeight: radius*2, x: x, y: y }),
             speed: speed,
             angle: angle,
         });
         this.balls.push(ball);
         // the ball is finally adopted by the playground.  For UI elements to be rendered, they must be attached to a hierarchy rooted to an active canvas.
-        Hierarchy.adopt(this.playground, ball);
+        gizmo.Hierarchy.adopt(this.playground, ball);
     }
 
     /**
@@ -870,11 +872,11 @@ class PlayState extends GameState {
             let x = width*i;
             let y = 0;
             let wall = new Wall({
-                xform: new XForm({ origx: 0, origy: 0, left: 0, right: 1, top: 0, bottom: 1, fixedWidth: width, fixedHeight: height, x: x, y: y }),
+                xform: new gizmo.XForm({ origx: 0, origy: 0, left: 0, right: 1, top: 0, bottom: 1, fixedWidth: width, fixedHeight: height, x: x, y: y }),
             });
             this.walls.push(wall);
             // the wall is adopted by the playground.  For UI elements to be rendered, they must be attached to a hierarchy rooted to an active canvas.
-            Hierarchy.adopt(this.playground, wall);
+            gizmo.Hierarchy.adopt(this.playground, wall);
         }
 
         // left/right
@@ -886,17 +888,17 @@ class PlayState extends GameState {
             let y = offset + height*i;
             // left
             let wall = new Wall({
-                xform: new XForm({ origx: 0, origy: 0, left: 0, right: 1, top: 0, bottom: 1, fixedWidth: width, fixedHeight: height, x: 0, y: y }),
+                xform: new gizmo.XForm({ origx: 0, origy: 0, left: 0, right: 1, top: 0, bottom: 1, fixedWidth: width, fixedHeight: height, x: 0, y: y }),
             });
             this.walls.push(wall);
-            Hierarchy.adopt(this.playground, wall);
+            gizmo.Hierarchy.adopt(this.playground, wall);
             // right
             wall = new Wall({
-                xform: new XForm({ origx: 0, origy: 0, left: 0, right: 1, top: 0, bottom: 1, fixedWidth: width, fixedHeight: height, x: width*23, y: y }),
+                xform: new gizmo.XForm({ origx: 0, origy: 0, left: 0, right: 1, top: 0, bottom: 1, fixedWidth: width, fixedHeight: height, x: width*23, y: y }),
             });
             this.walls.push(wall);
             // the wall is adopted by the playground.  For UI elements to be rendered, they must be attached to a hierarchy rooted to an active canvas.
-            Hierarchy.adopt(this.playground, wall);
+            gizmo.Hierarchy.adopt(this.playground, wall);
         }
     }
 
@@ -908,7 +910,7 @@ class PlayState extends GameState {
      */
     spawnBrick(col, row, hits) {
         // calculate the overall area for bricks within playground
-        let brickArea = new Bounds(
+        let brickArea = new gizmo.Bounds(
             Math.round(this.playground.xform.width*this.constructor.brickLeftPct),
             Math.round(this.playground.xform.height*this.constructor.brickTopPct),
             Math.round(this.playground.xform.width*((1-this.constructor.brickRightPct)-this.constructor.brickLeftPct)),
@@ -921,16 +923,16 @@ class PlayState extends GameState {
         let y = brickArea.y+brickHeight*row;
         // spawn the brick
         let brick = new Brick({
-            sketch: Generator.generate(this.assets.get(`brick.${hits}`)),
-            xform: new XForm({ origx: 0, origy: 0, left: 0, right: 1, top: 0, bottom: 1, fixedWidth: brickWidth, fixedHeight: brickHeight, x: x, y: y }),
+            sketch: gizmo.Generator.generate(this.assets.get(`brick.${hits}`)),
+            xform: new gizmo.XForm({ origx: 0, origy: 0, left: 0, right: 1, top: 0, bottom: 1, fixedWidth: brickWidth, fixedHeight: brickHeight, x: x, y: y }),
             score: hits*100,
             hits: hits,
         });
         // listen for bricks being destroyed
-        EvtSystem.listen(brick, this, 'gizmo.destroyed', this.onBrickDestroyed)
+        gizmo.EvtSystem.listen(brick, this, 'gizmo.destroyed', this.onBrickDestroyed)
         this.bricks.push(brick);
         // the brick is adopted by the playground.  For UI elements to be rendered, they must be attached to a hierarchy rooted to an active canvas.
-        Hierarchy.adopt(this.playground, brick);
+        gizmo.Hierarchy.adopt(this.playground, brick);
     }
 
     /**
@@ -940,7 +942,7 @@ class PlayState extends GameState {
     spawnLevel(idx) {
         this.level = idx;
         // update UI text
-        let uitext = Hierarchy.find(this.cvs, (v) => v.tag === 'level');
+        let uitext = gizmo.Hierarchy.find(this.cvs, (v) => v.tag === 'level');
         uitext.text = `level: ${this.level+1}`;
         // load new level
         let level = this.constructor.levels[idx];
@@ -965,10 +967,10 @@ class PlayState extends GameState {
         // check if this is the last level...
         if (this.level+1 >= this.constructor.levels.length) {
             // game won
-            StateMgr.start('win', {score: this.score});
+            gizmo.StateMgr.start('win', {score: this.score});
         // otherwise, spawn next level
         } else {
-            new Timer({ttl: 0, cb: () => {
+            new gizmo.Timer({ttl: 0, cb: () => {
                 this.spawnLevel(this.level+1);
                 this.startTimer();
             }});
@@ -982,7 +984,7 @@ class PlayState extends GameState {
     incrementScore(value) {
         this.score += value;
         // find and update UI element keeping track of score
-        let uitext = Hierarchy.find(this.cvs, (v) => v.tag === 'score');
+        let uitext = gizmo.Hierarchy.find(this.cvs, (v) => v.tag === 'score');
         let text = `score: ${this.score.toString().padStart(5, "0")}`;
         uitext.text = text;
     }
@@ -1000,7 +1002,7 @@ class PlayState extends GameState {
         if (!this.balls.length) {
             // remove a life
             this.lives--;
-            let uitext = Hierarchy.find(this.cvs, (v) => v.tag === 'lives');
+            let uitext = gizmo.Hierarchy.find(this.cvs, (v) => v.tag === 'lives');
             let text = `lives: ${this.lives}`;
             uitext.text = text;
             // if lives remaining, start a new timer to spawn a new ball
@@ -1009,7 +1011,7 @@ class PlayState extends GameState {
             // otherwise... trigger game over state
             } else {
                 this.gameover = true;
-                StateMgr.start('gameover', {score: this.score});
+                gizmo.StateMgr.start('gameover', {score: this.score});
             }
         }
     }
@@ -1020,7 +1022,7 @@ class PlayState extends GameState {
 /**
  * The Breakout class extends the gizmo Game class, which provides the overall framework for managing the game assets, states, and systems.
  */
-class Breakout extends Game {
+class Breakout extends gizmo.Game {
     /**
      * override the Game assetSpecs to define asset specifications for this game
      * -- Each asset specification is a javascript object (or nested objects) that define properties of the asset and potentially
@@ -1034,40 +1036,40 @@ class Breakout extends Game {
         //    object specification for that specific class with the provided attributes.
         // -- Tag should be unique across all assets
         // The Rect class is used for rendering rectangles.  Here a dark gray rectangle is used for the game background.
-        Rect.xspec({ tag: 'bg', color: darkGray }),
+        gizmo.Rect.xspec({ tag: 'bg', color: darkGray }),
         // The Sfx class is used for defining sound effects.
         // -- volume is used to reduce the volume of this specific sound effect when played.
         // -- audio is used to define the sound effect media.  The 'SfxRef' class is a media reference class that defines that audio data should
         //    be loaded from the specified file.  When assets are loaded by the game, this media reference is replaced in the asset specification 
         //    with the actual data that was loaded.
-        Sfx.xspec({ tag: 'spawn.ball', volume: .2, audio: new SfxRef({src: 'media/spawnBall.wav'}) }),
-        Sfx.xspec({ tag: 'lost.ball', volume: .2, audio: new SfxRef({src: 'media/lostBall.wav'}) }),
-        Sfx.xspec({ tag: 'wall.hit', volume: .2, audio: new SfxRef({src: 'media/wallHit.wav'}) }),
-        Sfx.xspec({ tag: 'brick.hit', volume: .2, audio: new SfxRef({src: 'media/brickHit.wav'}) }),
-        Sfx.xspec({ tag: 'brick.destroyed', volume: .2, audio: new SfxRef({src: 'media/brickDestroyed.wav'}) }),
-        Sfx.xspec({ tag: 'paddle.hit', volume: .2, audio: new SfxRef({src: 'media/paddleHit.wav'}) }),
-        Sfx.xspec({ tag: 'blip', volume: .2, audio: new SfxRef({src: 'media/blip.wav'}) }),
+        gizmo.Sfx.xspec({ tag: 'spawn.ball', volume: .2, audio: new gizmo.SfxRef({src: 'media/spawnBall.wav'}) }),
+        gizmo.Sfx.xspec({ tag: 'lost.ball', volume: .2, audio: new gizmo.SfxRef({src: 'media/lostBall.wav'}) }),
+        gizmo.Sfx.xspec({ tag: 'wall.hit', volume: .2, audio: new gizmo.SfxRef({src: 'media/wallHit.wav'}) }),
+        gizmo.Sfx.xspec({ tag: 'brick.hit', volume: .2, audio: new gizmo.SfxRef({src: 'media/brickHit.wav'}) }),
+        gizmo.Sfx.xspec({ tag: 'brick.destroyed', volume: .2, audio: new gizmo.SfxRef({src: 'media/brickDestroyed.wav'}) }),
+        gizmo.Sfx.xspec({ tag: 'paddle.hit', volume: .2, audio: new gizmo.SfxRef({src: 'media/paddleHit.wav'}) }),
+        gizmo.Sfx.xspec({ tag: 'blip', volume: .2, audio: new gizmo.SfxRef({src: 'media/blip.wav'}) }),
         // The Sprite class is used for rendering a single image to the screen.
         // -- img is used define the HTML image element.  Here 'SheetRef' is another media reference class that defines how to load the HTML
         //    image element from the specified file.  It is treating the source image file as a sprite sheet, and is loading a specific
         //    image from the sheet for this 'brick.1' asset based on specified dimensions and position within the sprite sheet.
-        Sprite.xspec({tag: 'brick.1', img: new SheetRef({src: 'media/bricks.png', width: 32, height: 16, x: 16*3, y: 16*4}) }),
-        Sprite.xspec({tag: 'brick.2', img: new SheetRef({src: 'media/bricks.png', width: 32, height: 16, x: 16*5, y: 16*4}) }),
-        Sprite.xspec({tag: 'brick.3', img: new SheetRef({src: 'media/bricks.png', width: 32, height: 16, x: 16*7, y: 16*4}) }),
-        Sprite.xspec({tag: 'ball', img: new SheetRef({src: 'media/bricks.png', width: 16, height: 16, x: 0, y: 0}) }),
-        Sprite.xspec({tag: 'paddle', img: new SheetRef({src: 'media/bricks.png', width: 48, height: 16, x: 16, y: 0}) }),
+        gizmo.Sprite.xspec({tag: 'brick.1', img: new gizmo.SheetRef({src: 'media/bricks.png', width: 32, height: 16, x: 16*3, y: 16*4}) }),
+        gizmo.Sprite.xspec({tag: 'brick.2', img: new gizmo.SheetRef({src: 'media/bricks.png', width: 32, height: 16, x: 16*5, y: 16*4}) }),
+        gizmo.Sprite.xspec({tag: 'brick.3', img: new gizmo.SheetRef({src: 'media/bricks.png', width: 32, height: 16, x: 16*7, y: 16*4}) }),
+        gizmo.Sprite.xspec({tag: 'ball', img: new gizmo.SheetRef({src: 'media/bricks.png', width: 16, height: 16, x: 0, y: 0}) }),
+        gizmo.Sprite.xspec({tag: 'paddle', img: new gizmo.SheetRef({src: 'media/bricks.png', width: 48, height: 16, x: 16, y: 0}) }),
         // The Animator class is used for rendering an sketch to the screen based on animation state.  It is a wrapper class to other assets.
         // -- sketches is used define the mapping of animation state tags to asset specifications.
         //    'idle' is associated with a separate sprite.  While a sprite is used here, any other sketch class could also be used.
         //    'hit' is associated with a separate sprite
         //    
-        Animator.xspec({tag: 'wall.v', sketches: {
-            idle: Sprite.xspec({img: new SheetRef({src: 'media/bricks.png', width: 16, height: 64, x: 0, y: 16*3}) }),
-            hit: Sprite.xspec({img: new SheetRef({src: 'media/bricks.png', width: 16, height: 64, x: 16, y: 16*3}) }),
+        gizmo.Animator.xspec({tag: 'wall.v', sketches: {
+            idle: gizmo.Sprite.xspec({img: new gizmo.SheetRef({src: 'media/bricks.png', width: 16, height: 64, x: 0, y: 16*3}) }),
+            hit: gizmo.Sprite.xspec({img: new gizmo.SheetRef({src: 'media/bricks.png', width: 16, height: 64, x: 16, y: 16*3}) }),
         }}),
-        Animator.xspec({tag: 'wall.h', sketches: {
-            idle: Sprite.xspec({img: new SheetRef({src: 'media/bricks.png', width: 64, height: 16, x: 0, y: 16*2}) }),
-            hit: Sprite.xspec({img: new SheetRef({src: 'media/bricks.png', width: 64, height: 16, x: 64, y: 16}) }),
+        gizmo.Animator.xspec({tag: 'wall.h', sketches: {
+            idle: gizmo.Sprite.xspec({img: new gizmo.SheetRef({src: 'media/bricks.png', width: 64, height: 16, x: 0, y: 16*2}) }),
+            hit: gizmo.Sprite.xspec({img: new gizmo.SheetRef({src: 'media/bricks.png', width: 64, height: 16, x: 64, y: 16}) }),
         }}),
     ];
 
@@ -1081,7 +1083,7 @@ class Breakout extends Game {
         new GameOverState({ tag: 'gameover' });
         new WinState({ tag: 'win' });
         // trigger the game state manager to start the 'title' state
-        StateMgr.start('title');
+        gizmo.StateMgr.start('title');
     }
 }
 
