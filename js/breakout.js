@@ -25,12 +25,7 @@ import {
     Sketch,
     Animator,
     Assets,
-//} from 'https://tylorallison.github.io/gizmo/releases/gizmo.mjs';
-} from '../../gizmo/dist/gizmo.mjs';
-/*
-
-*/
-
+} from 'https://tylorallison.github.io/gizmo/releases/gizmo.mjs';
 
 /**
  * textFormatTemplate provides a TextFormat template.  This allows for common look-and-feel properties like the font

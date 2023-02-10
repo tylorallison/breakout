@@ -1,39 +1,3 @@
-/*
-import {
-    Game,
-    UiCanvas,
-    Hierarchy,
-    XForm,
-    UiPanel,
-    UiText,
-    Sfx,
-    Mathf,
-    SheetRef,
-    SfxRef,
-    GameState,
-    StateMgr,
-    TextFormat,
-    EvtSystem,
-    Rect,
-    Generator,
-    Timer,
-    Vect,
-    Random,
-    Schema,
-    Bounds,
-    SfxSystem,
-    Sprite,
-    Sketch,
-    Animator,
-    Assets,
-//} from 'https://tylorallison.github.io/gizmo/releases/gizmo.mjs';
-} from '../../gizmo/dist/gizmo.mjs';
-*/
-/*
-
-*/
-
-
 /**
  * textFormatTemplate provides a TextFormat template.  This allows for common look-and-feel properties like the font
  * default colors, styles, etc. to be assigned project wide.
